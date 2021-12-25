@@ -265,71 +265,15 @@ class Table():
                 print(temp[i + j][2], end=" ")
             print("")
 
-    def check(self, value1, value2, order, position):
-        position+=1
-        print('cheking ',value1, value2, order, position)
-        if position>=len(order):
-            return 'same','asc'
-        for i in self.database:
-            for j in self.database:
-                if order[position][1]=="asc":
-                    if i[-1]==value1 and j[-1]==value2 and i[1]==j[1]==order[position][0]:
-                        print(i[-2],j[-2])
-                        if i[-2]==j[-2]:
-                            self.check(i[-1], j[-1], order, position)
-                        if i[-2]>j[-2]:
-                            return 'first grater','asc'
-                        if i[-2]<j[-2]:
-                            return 'second grater','asc'
-                if order[position][1] == "desc":
-                    if i[-1]==value1 and j[-1]==value2 and i[1]==j[1]==order[position][0]:
-                        print(i[-2], j[-2])
-                        if i[-2]==j[-2]:
-                            self.check(i[-1], j[-1], order, position)
-                        if i[-2]>j[-2]:
-                            return 'first grater','desc'
-                        if i[-2]<j[-2]:
-                            return 'second grater','desc'
-
-def sort(sorted, ordered):
-    o=0
-    print(ordered[o][1].lower())
-    for i in range(len(sorted)):
-        for j in range(0, len(sorted)-i-1):
-            if ordered[o][1].lower() == 'asc':
-                print('check asc', sorted[j][o] , sorted[j+1][o])
-                if sorted[j][o]>sorted[j+1][o]:
-                    sorted[j], sorted[j+1]=sorted[j+1], sorted[j]
-                elif sorted[j][o]==sorted[j+1][o]:
-                    ch, order=self.check(sorted[j][-1], sorted[j+1][-1], ordered, o)
-                    print('check rezult',ch,order)
-                    if ch in ["second grater","same"] and order=='asc':
-                        pass
-                    if ch=="first grater" and order=='asc':
-                        sorted[j], sorted[j + 1] = sorted[j + 1], sorted[j]
-                    if ch=="second grater" and order=='desc':
-                        sorted[j], sorted[j + 1] = sorted[j + 1], sorted[j]
-                    if ch in ["first grater","same"] and order=='desc':
-                        pass
-            if ordered[o][1].lower() =='desc':
-                print('check desc', sorted[j][o], sorted[j + 1][o])
-                if sorted[j][o]<sorted[j+1][o]:
-                    sorted[j], sorted[j+1]=sorted[j+1], sorted[j]
-                elif sorted[j][o]==sorted[j+1][o]:
-                    ch, order = self.check(sorted[j][-1], sorted[j + 1][-1], ordered, o)
-                    print('check rezult', ch, order)
-                    if ch in ["second grater", "same"] and order == 'asc':
-                        pass
-                    if ch == "first grater" and order == 'asc':
-                        sorted[j], sorted[j + 1] = sorted[j + 1], sorted[j]
-                    if ch == "second grater" and order == 'desc':
-                        sorted[j], sorted[j + 1] = sorted[j + 1], sorted[j]
-                    if ch in ["first grater", "same"] and order == 'desc':
-                        pass
-    def rofl(self, sort, ord):
-        pass
-    # ordered[i]=[column, ord]
-    # sorted[i]=[[value,id]]
+    def sortirovka(self, sort, ord):
+        for i in range(len(sort), 0, -1):
+            for j in range(0, len(sort)-1):
+                if sort[j][0].lower()>sort[j+1][0].lower():
+                    sort[j], sort [j+1] = sort [j+1], sort[j]
+        print("+"+ord+'+')
+        if ord.lower()=="desc":
+            sort.reverse()
+        return sort
 
     def select_order(self, table_name, column, ordered):
         sort=[]
@@ -356,8 +300,54 @@ def sort(sorted, ordered):
                     return 0
 
 
+            # ordered[i] = ordered[i].split()
+            # if ordered[i].lower() in ('asc','desc'):
+            #     print('dont use saved words in order')
+            #     return 0
+            # if (ordered[i][-3:].lower() !='asc' or len(ordered[i])<3) and (ordered[i][-4:].lower() !='desc' or len(ordered[i])<4):
+            #     ordered[i]=ordered[i]+' ASC'
 
+        if table_name not in self.column.keys():
+            print('table not exist')
+            return 0
 
+        for i in column:
+            if i not in self.column[table_name]:
+                print('column not exist', i)
+                return 0
+        print(ordered)
+        for i in self.database:
+            if i[1]==ordered[0][0] and table_name==i[0]:
+                sort.append([i[2], i[3]])
+        sort=self.sortirovka(sort, ordered[0][1])
+        print(sort)
+        for i in range(1, len(ordered)):
+            #ordered[i]=[column, ord]
+            #sorted[i]=[[value,id]]
+            t=1
+            while t!=0:
+                t=0
+                for n in range(len(sort)-1):
+                    if sort[n][0]==sort[n+1][0]:
+                        t+=1
+                        check1=check2=0
+                        if ordered[i][1].lower()=='asc':
+                            for j in self.database:
+                                if j[1]==ordered[i][0] and j[-1]==sort[n][1]:
+                                    check1=j[2]
+                                if j[1]==ordered[i][0] and j[-1]==sort[n+1][1]:
+                                    check2=j[2]
+                            if check1>check2:
+                                sort[n], sort[n+1]=sort[n+1], sort[n]
+                        elif ordered[i][1].lower()=='desc':
+                            for j in self.database:
+                                if j[1]==ordered[i][0] and j[-1]==sort[n][1]:
+                                    check1=j[2]
+                                if j[1]==ordered[i][0] and j[-1]==sort[n+1][1]:
+                                    check2=j[2]
+                            if check1<check2:
+                                sort[n], sort[n+1]=sort[n+1], sort[n]
+        print(sort)
 
 def Command():
     command = str(" ")
@@ -415,11 +405,11 @@ def Check(command):
 
             condition = other[other.lower().find("where")+6 :other.lower().find(" order_by")]
             ordered = other[other.lower().find("order_by")+9:other.find(" nothing")]
-            print("немає реалізації, і не працює")
+            print(colunm_name, table_name, condition, ordered)
 
         elif "where" in other.lower():
             condition = other[other.lower().find("where")+6:other.find(" nothing")]
-            print("є реалізація, але не працює")
+            t.select_were(table_name, colunm_name, condition)
         elif "order_by" in other.lower():
             ordered = other[other.lower().find("order_by")+9:other.find(" nothing")]
             if ordered[-1]==" ":
